@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <title>Avaliação Alimentar e Treino</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #e4e7ec;
+      --primary: #6d5dfc;
+      --primary-dark: #5141df;
+      --accent: #23c483;
+      --danger: #e5484d;
+      --shadow: 0 18px 50px rgba(16, 24, 40, .10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 10% 5%, rgba(109,93,252,.14), transparent 30%),
+        radial-gradient(circle at 92% 12%, rgba(35,196,131,.11), transparent 25%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      color: #fff;
+      background: rgba(17, 24, 39, .94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .topbar-inner {
+      width: min(1080px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 14px 0 12px;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--primary), #8f84ff);
+      box-shadow: 0 8px 24px rgba(109,93,252,.35);
+    }
+
+    .step-label {
+      color: #d0d5dd;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,.12);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 10%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width .35s ease;
+    }
+
+    .page {
+      width: min(900px, calc(100% - 28px));
+      margin: 34px auto 50px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: var(--primary-dark);
+      background: rgba(109,93,252,.10);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .hero h1 {
+      margin: 14px auto 9px;
+      max-width: 760px;
+      font-size: clamp(29px, 5vw, 46px);
+      line-height: 1.08;
+      letter-spacing: -.045em;
+    }
+
+    .hero p {
+      margin: 0 auto;
+      max-width: 650px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .form-card {
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .step {
+      display: none;
+      padding: clamp(24px, 5vw, 44px);
+      animation: fade .25s ease;
+    }
+
+    .step.active { display: block; }
+
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-header {
+      margin-bottom: 28px;
+    }
+
+    .step-number {
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+
+    .step h2 {
+      margin: 8px 0 8px;
+      font-size: clamp(23px, 4vw, 31px);
+      letter-spacing: -.035em;
+    }
+
+    .step-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .grid { display: grid; gap: 18px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field.full { grid-column: 1 / -1; }
+
+    label, legend {
+      font-size: 14px;
+      font-weight: 800;
+      color: #344054;
+    }
+
+    .required::after { content: " *"; color: var(--danger); }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 13px;
+      padding: 13px 14px;
+      font: inherit;
+      outline: none;
+      transition: .2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(109,93,252,.12);
+    }
+
+    textarea { min-height: 110px; resize: vertical; }
+    input::placeholder, textarea::placeholder { color: #98a2b3; }
+
+    fieldset {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      min-width: 0;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .choice {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 650;
+      transition: .2s ease;
+    }
+
+    .choice:hover { border-color: #b9b3ff; transform: translateY(-1px); }
+    .choice input { width: 18px; height: 18px; padding: 0; flex: 0 0 auto; accent-color: var(--primary); }
+    .choice:has(input:checked) { border-color: var(--primary); background: rgba(109,93,252,.06); }
+
+    .conditional {
+      display: none;
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 15px;
+      background: #f8f7ff;
+      border: 1px dashed #c7c2ff;
+    }
+    .conditional.visible { display: block; }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px clamp(24px, 5vw, 44px);
+      border-top: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 49px;
+      border: 0;
+      border-radius: 13px;
+      padding: 0 20px;
+      font: inherit;
+      font-weight: 850;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .55; cursor: wait; transform: none; }
+    .btn-secondary { color: #344054; background: #eef1f6; }
+    .btn-primary { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); box-shadow: 0 10px 24px rgba(109,93,252,.25); }
+    .btn-whatsapp { color: #fff; background: linear-gradient(135deg, #25d366, #12a94d); box-shadow: 0 10px 24px rgba(37,211,102,.22); }
+
+    .status {
+      display: none;
+      margin: 0 clamp(24px, 5vw, 44px) 24px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .status.show { display: block; }
+    .status.error { color: #8a1c1c; background: #fff0f0; border: 1px solid #ffc8c8; }
+    .status.success { color: #11643f; background: #edfff7; border: 1px solid #afeaca; }
+
+    .privacy {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin: 18px auto 0;
+      max-width: 690px;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,.5);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 700px) {
+      .page { margin-top: 24px; }
+      .grid.two, .grid.three, .choice-grid { grid-template-columns: 1fr; }
+      .brand span:last-child { display: none; }
+      .step { padding: 25px 18px 28px; }
+      .actions { padding: 16px 18px; }
+      .btn { flex: 1; padding: 0 12px; }
+      .hero p { font-size: 15px; }
+      .status { margin-left: 18px; margin-right: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-row">
+        <div class="brand"><span class="brand-mark">🏋️</span><span>Avaliação Fitness</span></div>
+        <div class="step-label" id="stepLabel">Etapa 1 de 10</div>
+      </div>
+      <div class="progress-track" aria-label="Progresso do formulário">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <span class="hero-badge">📝 Avaliação personalizada</span>
+      <h1>Formulário de Avaliação Alimentar e Treino</h1>
+      <p>Preencha cada etapa com atenção. Suas respostas serão registradas e enviadas pelo WhatsApp para facilitar sua avaliação.</p>
+    </section>
+
+    <form id="assessmentForm" class="form-card" novalidate>
+      <section class="step active" data-step="1">
+        <div class="step-header"><div class="step-number">Etapa 01</div><h2>Informações pessoais</h2><p>Vamos começar com seus dados básicos.</p></div>
+        <div class="grid two">
+          <div class="field full"><label class="required" for="nome">Nome completo</label><input id="nome" name="nome" type="text" autocomplete="name" placeholder="Digite seu nome" required></div>
+          <div class="field"><label class="required" for="idade">Idade</label><input id="idade" name="idade" type="number" min="12" max="100" placeholder="Ex.: 29" required></div>
+          <div class="field"><label for="dataPreenchimento">Data de preenchimento</label><input id="dataPreenchimento" name="dataPreenchimento" type="text" readonly></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="2">
+        <div class="step-header"><div class="step-number">Etapa 02</div><h2>Dados corporais</h2><p>Informe medidas atuais para ajudar na definição da estratégia.</p></div>
+        <div class="grid two">
+          <div class="field"><label class="required" for="altura">Altura (cm)</label><input id="altura" name="altura" type="number" min="100" max="250" step="0.1" placeholder="Ex.: 165" required></div>
+          <div class="field"><label class="required" for="peso">Peso atual (kg)</label><input id="peso" name="peso" type="number" min="30" max="350" step="0.1" placeholder="Ex.: 68,5" required></div>
+          <div class="field"><label for="cintura">Cintura, na altura do umbigo (cm)</label><input id="cintura" name="cintura" type="number" step="0.1" placeholder="Ex.: 78"></div>
+          <div class="field"><label for="quadril">Quadril (cm)</label><input id="quadril" name="quadril" type="number" step="0.1" placeholder="Ex.: 102"></div>
+          <div class="field"><label for="gordura">Percentual de gordura (%)</label><input id="gordura" name="gordura" type="number" min="1" max="70" step="0.1" placeholder="Caso saiba"></div>
+          <fieldset class="field full"><legend class="required">Objetivo principal</legend><div class="choice-grid">
+            <label class="choice"><input type="radio" name="objetivo" value="Ganhar massa muscular (hipertrofia)" required>Ganhar massa muscular</label>
+            <label class="choice"><input type="radio" name="objetivo" value="Emagrecer/perder gordura">Emagrecer / perder gordura</label>
+            <label class="choice"><input type="radio" name="objetivo" value="Definir o corpo mantendo músculos">Definir mantendo músculos</label>
+            <label class="choice"><input type="radio" name="objetivo" value="Aumentar glúteos e pernas">Aumentar glúteos e pernas</label>
+            <label class="choice"><input type="radio" name="objetivo" value="Outro" data-toggle="objetivoOutroBox">Outro</label>
+          </div><div id="objetivoOutroBox" class="conditional"><label for="objetivoOutro">Qual é o seu objetivo?</label><input id="objetivoOutro" name="objetivoOutro" type="text" placeholder="Descreva seu objetivo"></div></fieldset>
+        </div>
+      </section>
+
+      <section class="step" data-step="3">
+        <div class="step-header"><div class="step-number">Etapa 03</div><h2>Histórico de treino</h2><p>Conte como é sua rotina atual de exercícios.</p></div>
+        <div class="grid two">
+          <fieldset class="field"><legend class="required">Há quanto tempo treina?</legend><div class="choice-grid">
+            <label class="choice"><input type="radio" name="tempoTreino" value="Comecei agora" required>Comecei agora</label>
+            <label class="choice"><input type="radio" name="tempoTreino" value="Menos de 6 meses">Menos de 6 meses</label>
+            <label class="choice"><input type="radio" name="tempoTreino" value="6 meses a 1 ano">6 meses a 1 ano</label>
+            <label class="choice"><input type="radio" name="tempoTreino" value="Mais de 1 ano">Mais de 1 ano</label>
+          </div></fieldset>
+          <fieldset class="field"><legend class="required">Quantos dias por semana?</legend><div class="choice-grid">
+            <label class="choice"><input type="radio" name="diasTreino" value="2 dias" required>2 dias</label>
+            <label class="choice"><input type="radio" name="diasTreino" value="3 dias">3 dias</label>
+            <label class="choice"><input type="radio" name="diasTreino" value="4 dias">4 dias</label>
+            <label class="choice"><input type="radio" name="diasTreino" value="5 dias ou mais">5 dias ou mais</label>
+          </div></fieldset>
+          <div class="field full"><label for="divisaoTreino">Como é sua divisão de treino?</label><textarea id="divisaoTreino" name="divisaoTreino" placeholder="Ex.: Segunda - pernas / Terça - superiores..."></textarea></div>
+          <div class="field"><label for="duracaoTreino">Duração normal do treino (minutos)</label><input id="duracaoTreino" name="duracaoTreino" type="number" min="10" max="300" placeholder="Ex.: 60"></div>
+          <fieldset class="field"><legend>Faz cardio?</legend><div class="choice-grid"><label class="choice"><input type="radio" name="fazCardio" value="Não">Não</label><label class="choice"><input type="radio" name="fazCardio" value="Sim" data-toggle="cardioBox">Sim</label></div></fieldset>
+          <div id="cardioBox" class="conditional field full"><div class="grid three"><div class="field"><label for="cardioTipo">Tipo</label><input id="cardioTipo" name="cardioTipo" type="text" placeholder="Esteira, bicicleta..."></div><div class="field"><label for="cardioTempo">Tempo</label><input id="cardioTempo" name="cardioTempo" type="text" placeholder="Ex.: 30 min"></div><div class="field"><label for="cardioSemana">Quantidade por semana</label><input id="cardioSemana" name="cardioSemana" type="text" placeholder="Ex.: 3 vezes"></div></div></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="4">
+        <div class="step-header"><div class="step-number">Etapa 04</div><h2>Rotina diária</h2><p>Seu nível de atividade influencia diretamente no planejamento.</p></div>
+        <div class="grid two">
+          <div class="field"><label for="horaAcorda">Horário que acorda</label><input id="horaAcorda" name="horaAcorda" type="time"></div>
+          <div class="field"><label for="horaDorme">Horário que dorme</label><input id="horaDorme" name="horaDorme" type="time"></div>
+          <div class="field full"><label for="trabalhoEstudo">Trabalha ou estuda?</label><textarea id="trabalhoEstudo" name="trabalhoEstudo" placeholder="Descreva sua ocupação e horários principais"></textarea></div>
+          <fieldset class="field full"><legend class="required">Seu dia é mais:</legend><div class="choice-grid">
+            <label class="choice"><input type="radio" name="nivelAtividade" value="Muito parado" required>Muito parado</label>
+            <label class="choice"><input type="radio" name="nivelAtividade" value="Moderadamente ativo">Moderadamente ativo</label>
+            <label class="choice"><input type="radio" name="nivelAtividade" value="Muito ativo">Muito ativo</label>
+          </div></fieldset>
+          <div class="field"><label for="passosDia">Passos aproximados por dia</label><input id="passosDia" name="passosDia" type="number" min="0" placeholder="Caso saiba"></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="5">
+        <div class="step-header"><div class="step-number">Etapa 05</div><h2>Alimentação atual</h2><p>Descreva o que costuma consumir em um dia normal.</p></div>
+        <div class="grid two">
+          <div class="field full"><label for="cafeManha">Café da manhã</label><textarea id="cafeManha" name="cafeManha" placeholder="O que costuma comer e beber?"></textarea></div>
+          <div class="field full"><label for="almoco">Almoço</label><textarea id="almoco" name="almoco" placeholder="Comida e quantidade aproximada"></textarea></div>
+          <div class="field"><label for="lancheTarde">Lanche da tarde</label><textarea id="lancheTarde" name="lancheTarde" placeholder="Descreva seu lanche"></textarea></div>
+          <div class="field"><label for="jantar">Jantar</label><textarea id="jantar" name="jantar" placeholder="Descreva seu jantar"></textarea></div>
+          <div class="field full"><label for="antesDormir">Antes de dormir (se faz)</label><textarea id="antesDormir" name="antesDormir" placeholder="Informe o que costuma consumir"></textarea></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="6">
+        <div class="step-header"><div class="step-number">Etapa 06</div><h2>Preferências alimentares</h2><p>Assim o plano pode ser mais agradável e sustentável.</p></div>
+        <div class="grid two">
+          <div class="field"><label for="alimentosGosta">Alimentos que gosta muito</label><textarea id="alimentosGosta" name="alimentosGosta"></textarea></div>
+          <div class="field"><label for="alimentosNaoGosta">Alimentos que não gosta ou não come</label><textarea id="alimentosNaoGosta" name="alimentosNaoGosta"></textarea></div>
+          <fieldset class="field full"><legend>Possui alergia ou intolerância?</legend><div class="choice-grid"><label class="choice"><input type="radio" name="temAlergia" value="Não">Não</label><label class="choice"><input type="radio" name="temAlergia" value="Sim" data-toggle="alergiaBox">Sim</label></div><div id="alergiaBox" class="conditional"><label for="alergiaQual">Qual?</label><input id="alergiaQual" name="alergiaQual" type="text"></div></fieldset>
+        </div>
+      </section>
+
+      <section class="step" data-step="7">
+        <div class="step-header"><div class="step-number">Etapa 07</div><h2>Saúde</h2><p>Estas informações são importantes para uma orientação responsável.</p></div>
+        <div class="grid two">
+          <fieldset class="field"><legend>Possui problema de saúde?</legend><div class="choice-grid"><label class="choice"><input type="radio" name="problemaSaude" value="Não">Não</label><label class="choice"><input type="radio" name="problemaSaude" value="Sim" data-toggle="saudeBox">Sim</label></div><div id="saudeBox" class="conditional"><label for="saudeQual">Qual?</label><input id="saudeQual" name="saudeQual" type="text"></div></fieldset>
+          <fieldset class="field"><legend>Usa algum medicamento?</legend><div class="choice-grid"><label class="choice"><input type="radio" name="usaMedicamento" value="Não">Não</label><label class="choice"><input type="radio" name="usaMedicamento" value="Sim" data-toggle="medicamentoBox">Sim</label></div><div id="medicamentoBox" class="conditional"><label for="medicamentoQual">Qual?</label><input id="medicamentoQual" name="medicamentoQual" type="text"></div></fieldset>
+          <fieldset class="field"><legend>Usa anticoncepcional?</legend><div class="choice-grid"><label class="choice"><input type="radio" name="usaAnticoncepcional" value="Não">Não</label><label class="choice"><input type="radio" name="usaAnticoncepcional" value="Sim" data-toggle="anticoncepcionalBox">Sim</label></div><div id="anticoncepcionalBox" class="conditional"><label for="anticoncepcionalQual">Qual?</label><input id="anticoncepcionalQual" name="anticoncepcionalQual" type="text"></div></fieldset>
+          <fieldset class="field"><legend>Seu ciclo menstrual é regular?</legend><div class="choice-grid"><label class="choice"><input type="radio" name="cicloRegular" value="Sim">Sim</label><label class="choice"><input type="radio" name="cicloRegular" value="Não">Não</label><label class="choice"><input type="radio" name="cicloRegular" value="Não se aplica">Não se aplica</label></div></fieldset>
+        </div>
+      </section>
+
+      <section class="step" data-step="8">
+        <div class="step-header"><div class="step-number">Etapa 08</div><h2>Suplementação</h2><p>Informe os suplementos que fazem parte da sua rotina.</p></div>
+        <div class="grid two">
+          <fieldset class="field full"><legend>Usa algum suplemento?</legend><div class="choice-grid"><label class="choice"><input type="radio" name="usaSuplemento" value="Não">Não</label><label class="choice"><input type="radio" name="usaSuplemento" value="Sim" data-toggle="suplementosBox">Sim</label></div></fieldset>
+          <div id="suplementosBox" class="conditional field full"><fieldset><legend>Quais?</legend><div class="choice-grid">
+            <label class="choice"><input type="checkbox" name="suplementos" value="Whey protein">Whey protein</label>
+            <label class="choice"><input type="checkbox" name="suplementos" value="Creatina">Creatina</label>
+            <label class="choice"><input type="checkbox" name="suplementos" value="Pré-treino">Pré-treino</label>
+            <label class="choice"><input type="checkbox" name="suplementos" value="Vitaminas">Vitaminas</label>
+            <label class="choice"><input type="checkbox" name="suplementos" value="Outro" data-toggle="suplementoOutroBox">Outro</label>
+          </div><div id="suplementoOutroBox" class="conditional"><label for="suplementoOutro">Qual?</label><input id="suplementoOutro" name="suplementoOutro" type="text"></div></fieldset></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="9">
+        <div class="step-header"><div class="step-number">Etapa 09</div><h2>Alimentação e orçamento</h2><p>Vamos adaptar as recomendações à sua realidade.</p></div>
+        <div class="grid two">
+          <fieldset class="field full"><legend>Costumam cozinhar em casa?</legend><div class="choice-grid"><label class="choice"><input type="radio" name="cozinhaCasa" value="Sim">Sim</label><label class="choice"><input type="radio" name="cozinhaCasa" value="Não">Não</label></div></fieldset>
+          <div class="field full"><label for="alimentosFaceis">Quais alimentos são mais fáceis de comprar na sua rotina?</label><textarea id="alimentosFaceis" name="alimentosFaceis"></textarea></div>
+          <div class="field full"><label for="limiteOrcamento">Existe algum limite de orçamento para alimentação?</label><textarea id="limiteOrcamento" name="limiteOrcamento" placeholder="Ex.: Até R$ 500 por mês ou sem limite definido"></textarea></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="10">
+        <div class="step-header"><div class="step-number">Etapa 10</div><h2>Meta e acompanhamento</h2><p>Última etapa: descreva o resultado que busca.</p></div>
+        <div class="grid two">
+          <div class="field full"><label class="required" for="mudancaCorpo">O que você mais quer mudar no seu corpo?</label><textarea id="mudancaCorpo" name="mudancaCorpo" required></textarea></div>
+          <div class="field full"><label class="required" for="resultadoEsperado">Qual resultado espera alcançar nos próximos 3 a 6 meses?</label><textarea id="resultadoEsperado" name="resultadoEsperado" required></textarea></div>
+          <fieldset class="field full"><legend class="required">Maior dificuldade atualmente</legend><div class="choice-grid">
+            <label class="choice"><input type="radio" name="maiorDificuldade" value="Falta de tempo" required>Falta de tempo</label>
+            <label class="choice"><input type="radio" name="maiorDificuldade" value="Falta de apetite">Falta de apetite</label>
+            <label class="choice"><input type="radio" name="maiorDificuldade" value="Comer demais">Comer demais</label>
+            <label class="choice"><input type="radio" name="maiorDificuldade" value="Não saber o que comer">Não saber o que comer</label>
+            <label class="choice"><input type="radio" name="maiorDificuldade" value="Falta de disciplina">Falta de disciplina</label>
+            <label class="choice"><input type="radio" name="maiorDificuldade" value="Outro" data-toggle="dificuldadeOutroBox">Outro</label>
+          </div><div id="dificuldadeOutroBox" class="conditional"><label for="dificuldadeOutro">Qual?</label><input id="dificuldadeOutro" name="dificuldadeOutro" type="text"></div></fieldset>
+          <div class="field full"><label for="observacoes">Observações adicionais</label><textarea id="observacoes" name="observacoes" placeholder="Inclua qualquer informação que considere importante"></textarea></div>
+        </div>
+      </section>
+
+      <div id="status" class="status" role="alert"></div>
+      <div class="actions">
+        <button type="button" class="btn btn-secondary" id="prevBtn">← Voltar</button>
+        <button type="button" class="btn btn-primary" id="nextBtn">Continuar →</button>
+        <button type="submit" class="btn btn-whatsapp" id="submitBtn" style="display:none">Enviar pelo WhatsApp</button>
+      </div>
+    </form>
+    <p class="privacy">Ao enviar, você autoriza o registro das informações no Google Planilhas e o envio da avaliação pelo WhatsApp. Este formulário não substitui consulta médica ou nutricional.</p>
+  </main>
+
+  <script>
+    // COLE AQUI A URL DO SEU APP DA WEB DO GOOGLE APPS SCRIPT.
+    // Exemplo: https://script.google.com/macros/s/SEU_ID/exec
+    const GOOGLE_SCRIPT_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
+    const WHATSAPP_NUMBER = "5588992171828";
+
+    const form = document.getElementById('assessmentForm');
+    const steps = [...document.querySelectorAll('.step')];
+    const progressBar = document.getElementById('progressBar');
+    const stepLabel = document.getElementById('stepLabel');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusBox = document.getElementById('status');
+    let currentStep = 0;
+
+    document.getElementById('dataPreenchimento').value = new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short', timeStyle: 'short'
+    }).format(new Date());
+
+    function updateStep() {
+      steps.forEach((step, index) => step.classList.toggle('active', index === currentStep));
+      const number = currentStep + 1;
+      progressBar.style.width = `${number * 10}%`;
+      stepLabel.textContent = `Etapa ${number} de 10`;
+      prevBtn.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+      nextBtn.style.display = currentStep === steps.length - 1 ? 'none' : 'inline-flex';
+      submitBtn.style.display = currentStep === steps.length - 1 ? 'inline-flex' : 'none';
+      statusBox.className = 'status';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function validateCurrentStep() {
+      const fields = [...steps[currentStep].querySelectorAll('input, select, textarea')];
+      for (const field of fields) {
+        if (!field.checkValidity()) {
+          field.reportValidity();
+          field.focus({ preventScroll: true });
+          field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return false;
+        }
+      }
+      return true;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (!validateCurrentStep()) return;
+      if (currentStep < steps.length - 1) currentStep++;
+      updateStep();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentStep > 0) currentStep--;
+      updateStep();
+    });
+
+    document.querySelectorAll('[data-toggle]').forEach(input => {
+      input.addEventListener('change', () => {
+        const groupName = input.name;
+        if (input.type === 'radio') {
+          document.querySelectorAll(`input[name="${groupName}"][data-toggle]`).forEach(item => {
+            document.getElementById(item.dataset.toggle)?.classList.toggle('visible', item.checked);
+          });
+        } else {
+          document.getElementById(input.dataset.toggle)?.classList.toggle('visible', input.checked);
+        }
+      });
+    });
+
+    function formToObject() {
+      const data = new FormData(form);
+      const obj = {};
+      for (const [key, value] of data.entries()) {
+        if (obj[key]) obj[key] = `${obj[key]}, ${value}`;
+        else obj[key] = value;
+      }
+      obj.dataRegistroISO = new Date().toISOString();
+      return obj;
+    }
+
+    const labels = {
+      nome:'Nome', idade:'Idade', dataPreenchimento:'Data de preenchimento', altura:'Altura (cm)', peso:'Peso (kg)', cintura:'Cintura (cm)', quadril:'Quadril (cm)', gordura:'Gordura (%)', objetivo:'Objetivo principal', objetivoOutro:'Outro objetivo', tempoTreino:'Tempo de treino', diasTreino:'Dias por semana', divisaoTreino:'Divisão de treino', duracaoTreino:'Duração do treino', fazCardio:'Faz cardio', cardioTipo:'Tipo de cardio', cardioTempo:'Tempo de cardio', cardioSemana:'Cardio por semana', horaAcorda:'Horário que acorda', horaDorme:'Horário que dorme', trabalhoEstudo:'Trabalho/estudo', nivelAtividade:'Nível de atividade', passosDia:'Passos por dia', cafeManha:'Café da manhã', almoco:'Almoço', lancheTarde:'Lanche da tarde', jantar:'Jantar', antesDormir:'Antes de dormir', alimentosGosta:'Alimentos que gosta', alimentosNaoGosta:'Alimentos que não gosta', temAlergia:'Alergia/intolerância', alergiaQual:'Qual alergia/intolerância', problemaSaude:'Problema de saúde', saudeQual:'Qual problema de saúde', usaMedicamento:'Usa medicamento', medicamentoQual:'Qual medicamento', usaAnticoncepcional:'Usa anticoncepcional', anticoncepcionalQual:'Qual anticoncepcional', cicloRegular:'Ciclo menstrual regular', usaSuplemento:'Usa suplemento', suplementos:'Suplementos', suplementoOutro:'Outro suplemento', cozinhaCasa:'Cozinha em casa', alimentosFaceis:'Alimentos fáceis de comprar', limiteOrcamento:'Limite de orçamento', mudancaCorpo:'O que quer mudar', resultadoEsperado:'Resultado esperado', maiorDificuldade:'Maior dificuldade', dificuldadeOutro:'Outra dificuldade', observacoes:'Observações adicionais'
+    };
+
+    function buildWhatsAppMessage(data) {
+      const sections = [
+        ['📝 *AVALIAÇÃO ALIMENTAR E TREINO*', ['nome','idade','dataPreenchimento']],
+        ['📏 *DADOS CORPORAIS*', ['altura','peso','cintura','quadril','gordura','objetivo','objetivoOutro']],
+        ['🏋️ *HISTÓRICO DE TREINO*', ['tempoTreino','diasTreino','divisaoTreino','duracaoTreino','fazCardio','cardioTipo','cardioTempo','cardioSemana']],
+        ['🕒 *ROTINA DIÁRIA*', ['horaAcorda','horaDorme','trabalhoEstudo','nivelAtividade','passosDia']],
+        ['🍽️ *ALIMENTAÇÃO ATUAL*', ['cafeManha','almoco','lancheTarde','jantar','antesDormir']],
+        ['🥗 *PREFERÊNCIAS*', ['alimentosGosta','alimentosNaoGosta','temAlergia','alergiaQual']],
+        ['❤️ *SAÚDE*', ['problemaSaude','saudeQual','usaMedicamento','medicamentoQual','usaAnticoncepcional','anticoncepcionalQual','cicloRegular']],
+        ['💊 *SUPLEMENTAÇÃO*', ['usaSuplemento','suplementos','suplementoOutro']],
+        ['💰 *ALIMENTAÇÃO E ORÇAMENTO*', ['cozinhaCasa','alimentosFaceis','limiteOrcamento']],
+        ['🎯 *META E ACOMPANHAMENTO*', ['mudancaCorpo','resultadoEsperado','maiorDificuldade','dificuldadeOutro','observacoes']]
+      ];
+
+      return sections.map(([title, keys]) => {
+        const content = keys.filter(key => data[key] && String(data[key]).trim()).map(key => `• *${labels[key]}:* ${data[key]}`).join('\n');
+        return content ? `${title}\n${content}` : '';
+      }).filter(Boolean).join('\n\n');
+    }
+
+    function showStatus(message, type) {
+      statusBox.textContent = message;
+      statusBox.className = `status show ${type}`;
+      statusBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!validateCurrentStep() || !form.checkValidity()) {
+        showStatus('Revise os campos obrigatórios antes de enviar.', 'error');
+        return;
+      }
+      if (!GOOGLE_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')) {
+        showStatus('Configuração pendente: cole a URL do Google Apps Script no arquivo index.html.', 'error');
+        return;
+      }
+
+      const data = formToObject();
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Salvando...';
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(data)
+        });
+
+        showStatus('Avaliação registrada. Abrindo o WhatsApp...', 'success');
+        const message = buildWhatsAppMessage(data);
+        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+        setTimeout(() => window.location.href = whatsappUrl, 700);
+      } catch (error) {
+        console.error(error);
+        showStatus('Não foi possível registrar a avaliação. Verifique sua internet e a configuração do Google Apps Script.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar pelo WhatsApp';
+      }
+    });
+
+    updateStep();
+  </script>
+</body>
+</html>
