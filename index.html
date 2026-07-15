@@ -502,7 +502,7 @@
   <script>
     // COLE AQUI A URL DO SEU APP DA WEB DO GOOGLE APPS SCRIPT.
     // Exemplo: https://script.google.com/macros/s/SEU_ID/exec
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIA1X2iFEHKkvXI2yL8m4Kx5gN5ZfySkmcW7TJ8oT2vjLw-rh51DC_SlQga7pwONU/exec";
+    const API_URL = "/api/avaliacao";
     const WHATSAPP_NUMBER = "5588992171828";
 
     const form = document.getElementById('assessmentForm');
@@ -609,38 +609,70 @@
       statusBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    form.addEventListener('submit', async (event) => {
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
+
       if (!validateCurrentStep() || !form.checkValidity()) {
-        showStatus('Revise os campos obrigatórios antes de enviar.', 'error');
-        return;
-      }
-      if (!GOOGLE_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')) {
-        showStatus('Configuração pendente: cole a URL do Google Apps Script no arquivo index.html.', 'error');
+        showStatus("Revise os campos obrigatórios antes de enviar.", "error");
         return;
       }
 
       const data = formToObject();
+
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner"></span> Salvando...';
+      submitBtn.innerHTML =
+        '<span class="spinner"></span> Salvando e gerando treino...';
 
       try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        const resposta = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify(data)
         });
 
-        showStatus('Avaliação registrada. Abrindo o WhatsApp...', 'success');
+        let resultado;
+
+        try {
+          resultado = await resposta.json();
+        } catch (erroJson) {
+          throw new Error(
+            "A API retornou uma resposta inválida. Verifique a configuração da Vercel."
+          );
+        }
+
+        if (!resposta.ok || !resultado.sucesso) {
+          throw new Error(
+            resultado.mensagem ||
+            "Não foi possível registrar a avaliação."
+          );
+        }
+
+        showStatus(
+          "Avaliação salva e treino gerado com sucesso. Abrindo o WhatsApp...",
+          "success"
+        );
+
         const message = buildWhatsAppMessage(data);
-        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-        setTimeout(() => window.location.href = whatsappUrl, 700);
+        const whatsappUrl =
+          `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+        setTimeout(() => {
+          window.location.href = whatsappUrl;
+        }, 700);
+
       } catch (error) {
         console.error(error);
-        showStatus('Não foi possível registrar a avaliação. Verifique sua internet e a configuração do Google Apps Script.', 'error');
+
+        showStatus(
+          error.message ||
+          "Não foi possível registrar a avaliação.",
+          "error"
+        );
+
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Enviar pelo WhatsApp';
+        submitBtn.textContent = "Enviar pelo WhatsApp";
       }
     });
 
